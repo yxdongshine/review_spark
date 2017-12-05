@@ -120,7 +120,7 @@ class NettyScalaServerHandler4(sc:SparkContext,sqlContext:SQLContext) extends Ch
     val resultStr = df
       .collect()
       .foldLeft(""){
-      (m, n) => m +"\\r\\n"+ n}
+      (m, n) => m + n}
     resultStr
   }
 }

@@ -50,14 +50,22 @@ object SparkCache {
     import sqlContext.implicits._
     //初始化数据建表
     // Create an RDD of Person objects and register it as a table.
-    val logDf: DataFrame = sc
+   /* val logDf: DataFrame = sc
       .textFile("./src/main/resources/init_spark_cache_rdd.txt")
       .map(_.split(" "))
       .map(
         l => Log(l(0),l(1),l(2),l(3),l(4),l(5))
       )
-      .toDF()
+      .toDF()*/
 
+    val data = Array("0000-00-00 15:01:02,683 R0171108150102673517787492206155 [com.ent.internal.EntInfoInternal.regEntMeb:628] ERROR {\"code\":100115,\"message\":\"该企业已存在\",\"ngis\":\"44de52810630043c736c91c33d999d23\",\"state\":0,\"ts\":1510124462682}")
+    val logDf = sc
+      .parallelize(data)
+      .map(_.toString.split(" "))
+      .map(
+        l => Log(l(0),l(1),l(2),l(3),l(4),l(5))
+      )
+      .toDF()
     logDf.registerTempTable(SparkSqlUtil.TABLE_NAME)
     logDf.cache()
 

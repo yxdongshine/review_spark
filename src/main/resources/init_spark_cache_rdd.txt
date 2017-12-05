@@ -1,0 +1,1 @@
+0000-00-00 15:01:02,683 R0171108150102673517787492206155 [com.ent.internal.EntInfoInternal.regEntMeb:628] ERROR {"code":100115,"message":"该企业已存在","ngis":"44de52810630043c736c91c33d999d23","state":0,"ts":1510124462682}

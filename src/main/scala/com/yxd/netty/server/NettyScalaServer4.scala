@@ -34,13 +34,13 @@ class NettyScalaServer4 {
         .childHandler( new ChannelInitializer[SocketChannel] {
             @throws(classOf[Exception])
             def initChannel(ch: SocketChannel) {
-              ch.pipeline.addLast(new LineBasedFrameDecoder(10240))
+              ch.pipeline.addLast(new LineBasedFrameDecoder(102400))
               ch.pipeline.addLast(new StringDecoder)
               ch.pipeline.addLast(new NettyScalaServerHandler4(sc,sqlContext))
             }
           })
-        .option(ChannelOption.SO_BACKLOG, 128)
-        .childOption(ChannelOption.SO_KEEPALIVE, true)
+        //.option(ChannelOption.SO_BACKLOG, 128)
+        //.childOption(ChannelOption.SO_KEEPALIVE, true)
 
     val f: ChannelFuture = b.bind(port).sync
     f.channel.closeFuture.sync

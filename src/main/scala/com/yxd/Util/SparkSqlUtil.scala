@@ -5,5 +5,13 @@ package com.yxd.Util
  */
 object SparkSqlUtil {
   val TABLE_NAME = "weblogs"
+  val DATA_SEPARATE = "#@#"
+  var count = 0
 
+  def accumulation():Long = {
+    synchronized{
+      count += 1
+    }
+    count
+  }
 }

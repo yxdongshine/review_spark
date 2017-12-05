@@ -2,7 +2,9 @@ package com.yxd.spark_cache
 
 //import com.yxd.netty.example.server.TimeServer
 
+import com.yxd.Util.SparkSqlUtil
 import com.yxd.netty.example.server.NettyServer4
+import com.yxd.netty.server.NettyScalaServer4
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.{SparkContext, SparkConf}
 
@@ -25,7 +27,8 @@ object SparkCache {
     //showRecord(sc,sqlContext)
     //启动服务器
     //startNettyServer(50864)
-
+    new NettyScalaServer4(50864)
+    .run(sc,sqlContext)
   }
 
   case class Log (
@@ -55,7 +58,7 @@ object SparkCache {
       )
       .toDF()
 
-    logDf.registerTempTable("weblogs")
+    logDf.registerTempTable(SparkSqlUtil.TABLE_NAME)
     logDf.cache()
 
   }

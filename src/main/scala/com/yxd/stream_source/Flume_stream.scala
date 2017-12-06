@@ -23,7 +23,7 @@ object Flume_stream {
     val conf = new SparkConf()
       .setAppName("Flume_stream")
       .setMaster("local[*]")
-    val ssc = new StreamingContext(conf, Seconds(60*1)) //指定批次运行间隔时间
+    val ssc = new StreamingContext(conf, Seconds(5*1)) //指定批次运行间隔时间
 
     //创建 stream_flume
     val flumeStream = FlumeUtils.createStream(ssc, "192.168.163.180", 50864)

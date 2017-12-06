@@ -5,14 +5,15 @@ import com.yxd.spark_cache.SparkCache.Log
 import io.netty.buffer.{ByteBuf, Unpooled}
 import io.netty.channel.{ChannelHandlerContext, ChannelInboundHandlerAdapter}
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{DataFrame, SQLContext}
 
 /**
  * Created by YXD on 2017/12/5.
  */
-class NettyScalaServerHandler4(sc:SparkContext,sqlContext:SQLContext) extends ChannelInboundHandlerAdapter{
+class NettyScalaServerHandler4(sc:SparkContext,sqlContext:SQLContext,var df:DataFrame) extends ChannelInboundHandlerAdapter{
 
   override def channelRead(ctx: ChannelHandlerContext, msg: AnyRef) {
+    //val startTime = System.currentTimeMillis()
     val body: String = msg.asInstanceOf[String]
     //System.out.println("server body: " + body )
     System.out.println("count:"+SparkSqlUtil.accumulation())
@@ -26,6 +27,8 @@ class NettyScalaServerHandler4(sc:SparkContext,sqlContext:SQLContext) extends Ch
       ctx.writeAndFlush(resp);
       //ctx.write(resp);
     }
+    //这里计算开销时间
+    //System.out.println("total time: " + (System.currentTimeMillis() - startTime) )
   }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
@@ -81,7 +84,7 @@ class NettyScalaServerHandler4(sc:SparkContext,sqlContext:SQLContext) extends Ch
     //数据清理
     val cleanedData = dataCleaning(message)
     val data = Array(cleanedData)
-    val bdf = sc
+    val bdf: DataFrame = sc
       .parallelize(data)
       .map(_.toString.split(" "))
       .map(
@@ -105,10 +108,23 @@ class NettyScalaServerHandler4(sc:SparkContext,sqlContext:SQLContext) extends Ch
       )
       .toDF()
 
-    var df = sqlContext.sql("select * from "+SparkSqlUtil.TABLE_NAME)
+    //val selectStartTime = System.currentTimeMillis()
+    //var df = sqlContext.sql("select * from "+SparkSqlUtil.TABLE_NAME)
+    //val unionStartTime = System.currentTimeMillis()
+    //System.out.println("select time: " + (unionStartTime - selectStartTime) )
     df = df.unionAll(bdf)
+    //val registerStartTime = System.currentTimeMillis()
+    //System.out.println("union time: " + (registerStartTime - unionStartTime) )
     df.registerTempTable(SparkSqlUtil.TABLE_NAME)
-    df.cache()
+    //val cacheStartTime = System.currentTimeMillis()
+    //System.out.println("register time: " + (  cacheStartTime- registerStartTime) )
+    /*val bo = sqlContext.isCached(SparkSqlUtil.TABLE_NAME)
+    println(bo)
+    if(!bo){
+      sqlContext.cacheTable(SparkSqlUtil.TABLE_NAME)
+      System.out.println("cache time: " + ( System.currentTimeMillis() - cacheStartTime) )
+    }*/
+
   }
 
   /**

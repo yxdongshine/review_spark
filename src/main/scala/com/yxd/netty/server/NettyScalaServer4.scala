@@ -1,15 +1,14 @@
 package com.yxd.netty.server
 
-import com.yxd.netty.example.server.{NettyServer4, NettyServerHandler4}
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.socket.SocketChannel
-import io.netty.channel.{ChannelFuture, ChannelOption, ChannelInitializer, EventLoopGroup}
+import io.netty.channel._
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.codec.LineBasedFrameDecoder
 import io.netty.handler.codec.string.StringDecoder
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{DataFrame, SQLContext}
 
 /**
  * Created by YXD on 2017/12/5.
@@ -24,19 +23,19 @@ class NettyScalaServer4 {
 
 
   @throws(classOf[Exception])
-  def run(sc:SparkContext,sqlContext:SQLContext) {
-    val bossGroup: EventLoopGroup = new NioEventLoopGroup
-    val workerGroup: EventLoopGroup = new NioEventLoopGroup
+  def run(sc:SparkContext,sqlContext:SQLContext,df:DataFrame) {
+    val bossGroup: EventLoopGroup = new NioEventLoopGroup(1)
+    //val workerGroup: EventLoopGroup = new NioEventLoopGroup
     try {
       val b: ServerBootstrap = new ServerBootstrap
-      b.group(bossGroup, workerGroup)
+      b.group(bossGroup)
         .channel(classOf[NioServerSocketChannel])
         .childHandler( new ChannelInitializer[SocketChannel] {
             @throws(classOf[Exception])
             def initChannel(ch: SocketChannel) {
-              ch.pipeline.addLast(new LineBasedFrameDecoder(102400))
+              ch.pipeline.addLast(new LineBasedFrameDecoder(1024*1024*10))
               ch.pipeline.addLast(new StringDecoder)
-              ch.pipeline.addLast(new NettyScalaServerHandler4(sc,sqlContext))
+              ch.pipeline.addLast(new NettyScalaServerHandler4(sc,sqlContext,df))
             }
           })
         //.option(ChannelOption.SO_BACKLOG, 128)
@@ -46,7 +45,7 @@ class NettyScalaServer4 {
     f.channel.closeFuture.sync
 
     } finally {
-      workerGroup.shutdownGracefully
+      //workerGroup.shutdownGracefully
       bossGroup.shutdownGracefully
     }
   }

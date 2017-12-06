@@ -3,7 +3,7 @@ package com.yxd.spark_cache
 //import com.yxd.netty.example.server.TimeServer
 
 import com.yxd.Util.SparkSqlUtil
-import com.yxd.netty.example.server.NettyServer4
+//import com.yxd.netty.example.server.NettyServer4
 import com.yxd.netty.server.NettyScalaServer4
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.{SparkContext, SparkConf}
@@ -15,20 +15,24 @@ object SparkCache {
   def main(args: Array[String]) {
     val conf = new SparkConf()
       .setAppName("SparkCache")
-      .setMaster("local[*]")
-    //.setMaster("spark://hadoop1:7070")
+      // .setMaster("local[*]")
+    .setMaster("spark://hadoop1:7070")
+    /*.set("deploy-mode","cluster")*/
+    /*.set("driver-memory","500m")*/
+    /*.set("executor-memory","1536m")*/
+    /*.set("conf","spark.ui.port=5050")*/
     val sc = new SparkContext(conf)
     //初始化sparksql
     val sqlContext = SQLContext.getOrCreate(sc)
 
     //创建表
-    initTable(sc,sqlContext)
+    val df = initTable(sc,sqlContext)
     //检查是否创建成功
     //showRecord(sc,sqlContext)
     //启动服务器
     //startNettyServer(50864)
     new NettyScalaServer4(50864)
-    .run(sc,sqlContext)
+    .run(sc,sqlContext,df)
   }
 
   case class Log (
@@ -45,7 +49,7 @@ object SparkCache {
    * @param sc
    * @param sqlContext
    */
-  def initTable(sc:SparkContext,sqlContext:SQLContext): Unit = {
+  def initTable(sc:SparkContext,sqlContext:SQLContext): DataFrame = {
     // this is used to implicitly convert an RDD to a DataFrame.
     import sqlContext.implicits._
     //初始化数据建表
@@ -59,16 +63,16 @@ object SparkCache {
       .toDF()*/
 
     val data = Array("0000-00-00 15:01:02,683 R0171108150102673517787492206155 [com.ent.internal.EntInfoInternal.regEntMeb:628] ERROR {\"code\":100115,\"message\":\"该企业已存在\",\"ngis\":\"44de52810630043c736c91c33d999d23\",\"state\":0,\"ts\":1510124462682}")
-    val logDf = sc
+    val logDf: DataFrame = sc
       .parallelize(data)
       .map(_.toString.split(" "))
       .map(
         l => Log(l(0),l(1),l(2),l(3),l(4),l(5))
       )
       .toDF()
-    logDf.registerTempTable(SparkSqlUtil.TABLE_NAME)
-    logDf.cache()
-
+    //logDf.registerTempTable(SparkSqlUtil.TABLE_NAME)
+    //sqlContext.cacheTable(SparkSqlUtil.TABLE_NAME)
+    logDf
   }
 
   /**
@@ -102,12 +106,12 @@ object SparkCache {
 
   /**
    *  //启动netty 服务器
-   * @param port
+   * //@param port
    */
-  def startNettyServer(port:Int): Unit = {
+/*  def startNettyServer(port:Int): Unit = {
     val ns = new NettyServer4(port)
     ns.run()
-  }
+  }*/
 
 
 

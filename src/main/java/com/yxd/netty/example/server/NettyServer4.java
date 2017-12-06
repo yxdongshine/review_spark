@@ -1,5 +1,6 @@
 package com.yxd.netty.example.server;
 
+import com.yxd.netty.example.server.NettyServerHandler4;
 import io.netty.bootstrap.ServerBootstrap;
 
 import io.netty.channel.ChannelFuture;
@@ -36,9 +37,9 @@ public class NettyServer4 {
                             ch.pipeline().addLast(new StringDecoder());
                             ch.pipeline().addLast(new NettyServerHandler4());
                         }
-                    })
-                    .option(ChannelOption.SO_BACKLOG, 128)          // (5)
-                    .childOption(ChannelOption.SO_KEEPALIVE, true); // (6)
+                    });
+                    //.option(ChannelOption.SO_BACKLOG, 128)          // (5)
+                    //.childOption(ChannelOption.SO_KEEPALIVE, true); // (6)
 
             // Bind and start to accept incoming connections.
             ChannelFuture f = b.bind(port).sync(); // (7)
